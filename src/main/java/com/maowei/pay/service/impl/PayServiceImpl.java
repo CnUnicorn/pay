@@ -19,9 +19,9 @@ import java.math.BigDecimal;
 
 //@Slf4j // 使用一个名为log的日志对象（log4j）
 @Service // 表示是一个service组件，在IoC容器中注册bean
-public class PayService implements IPayService {
+public class PayServiceImpl implements IPayService {
     // slf4j
-    private  final Logger logger = LoggerFactory.getLogger(PayService.class);
+    private  final Logger logger = LoggerFactory.getLogger(PayServiceImpl.class);
 
     @Autowired
     private BestPayService bestPayService;  // 注入bean，所有方法复用bestPayService，不用重复new

@@ -4,7 +4,7 @@ import com.lly835.bestpay.config.WxPayConfig;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
 import com.lly835.bestpay.model.PayResponse;
 import com.maowei.pay.pojo.PayInfo;
-import com.maowei.pay.service.impl.PayService;
+import com.maowei.pay.service.impl.PayServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class PayController {
     private static final Logger logger = LoggerFactory.getLogger(PayController.class);
 
     @Autowired
-    private PayService payService;
+    private PayServiceImpl payServiceImpl;
 
     @Autowired
     private WxPayConfig wxPayConfig;
@@ -32,7 +32,7 @@ public class PayController {
     public ModelAndView create(@RequestParam("orderId") String orderId,
                          @RequestParam("amount") BigDecimal amount,
                          @RequestParam("payType")BestPayTypeEnum bestPayTypeEnum) {
-        PayResponse response = payService.create(orderId, amount, bestPayTypeEnum); // 发起请求
+        PayResponse response = payServiceImpl.create(orderId, amount, bestPayTypeEnum); // 发起请求
 
         Map<String, String> map = new HashMap<>();
         // 支付方式不同，渲染就不同。
@@ -53,14 +53,14 @@ public class PayController {
     @PostMapping("/notify")
     @ResponseBody  // 如果校验正确，说明订单支付成功，向微信发送消息不再通知
     public String asyncNotify(@RequestBody String notifyData) {
-        return payService.asyncNotify(notifyData);
+        return payServiceImpl.asyncNotify(notifyData);
     }
 
     @GetMapping("/queryByOrderId")
     @ResponseBody
     public PayInfo queryByOrderId(@RequestParam("orderId") String orderId) {
         logger.info("查询支付记录...");
-        return payService.queryByOrderId(orderId);
+        return payServiceImpl.queryByOrderId(orderId);
     }
 
 
