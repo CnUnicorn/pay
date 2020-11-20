@@ -1,5 +1,6 @@
 package com.maowei.pay.service.impl;
 
+import com.google.gson.Gson;
 import com.lly835.bestpay.enums.BestPayPlatformEnum;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
 import com.lly835.bestpay.enums.OrderStatusEnum;
@@ -12,6 +13,7 @@ import com.maowei.pay.pojo.PayInfo;
 import com.maowei.pay.service.IPayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +25,17 @@ public class PayServiceImpl implements IPayService {
     // slf4j
     private  final Logger logger = LoggerFactory.getLogger(PayServiceImpl.class);
 
+    private final static String QUEUE_PAY_NOTIFY = "payNotify";
+
     @Autowired
     private BestPayService bestPayService;  // 注入bean，所有方法复用bestPayService，不用重复new
+
     @Autowired
     private PayInfoMapper payInfoMapper;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
     /**
      * 创建新的订单并发起支付请求
      * @param orderId 订单号
@@ -49,7 +58,7 @@ public class PayServiceImpl implements IPayService {
         request.setPayTypeEnum(bestPayTypeEnum);
 
         PayResponse response = bestPayService.pay(request);  // 发起请求，返回预支付订单信息
-        logger.info("发起支付Response={}",response);
+        logger.info("发起支付Response={}", response);
 
         return response;
     }
@@ -89,7 +98,8 @@ public class PayServiceImpl implements IPayService {
         }
 
         // TODO pay发送MQ消息，mall接收MQ消息
-
+        // 第一个参数是队列名称，第二个参数是需要发送的内容
+        amqpTemplate.convertAndSend(QUEUE_PAY_NOTIFY, new Gson().toJson(payInfo));
 
         // 商户确认交易成功后返回给微信和支付宝的结束信息不同。
         if (response.getPayPlatformEnum() == BestPayPlatformEnum.WX) {
